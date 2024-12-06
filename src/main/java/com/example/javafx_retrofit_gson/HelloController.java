@@ -44,7 +44,7 @@ public class HelloController {
                 observableList = FXCollections.observableArrayList(response.body());
                 System.out.println(observableList);
             }
-
+//
             @Override
             public void onFailure(Call<Root> call, Throwable throwable) {
                 Platform.runLater(() -> {
