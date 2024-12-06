@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -14,6 +15,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
 
 import java.util.List;
+import java.util.Map;
 
 public class HelloController {
     @FXML
@@ -26,6 +28,12 @@ public class HelloController {
     @FXML
     protected void onHelloButtonClick() {
 
+        // Generamos un objeto campos que contendrá el array que debemos poner en formato JSON en el BODY
+        // Este JSON debe tener el formato  '{"fields": ["name"]}'
+        // Para generarlo parece que no podemos hacerlo en formato texto y debemos preparar objetos que
+        // la librería GSON de Google se encarga de formatear para que se haga bien la solicitud.
+        CamposDevueltos campos = new CamposDevueltos();
+        campos.addCampo("name");
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://localhost:8069/")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -34,17 +42,22 @@ public class HelloController {
         APIService apiService = retrofit.create(APIService.class);
         Call<Root> call = apiService.getBancos("res.bank","fgonaci085@g.educaand.es",
                                                          "usuario",
-                                                         "c9d21e22-9ba7-4302-a4aa-8653a42541f7"
-                );
-//,                @Body String body,"{\"fields\": [\"name\"]}"
+                                                         "0553f96c-b7a3-4a49-b40e-e9697b937b73",
+                                                             campos
+                                               );
+
         call.enqueue(new Callback<Root>() {
             @Override
             public void onResponse(Call<Root> call, Response<Root> response) {
-                ObservableList<Root> observableList = FXCollections.observableArrayList();
-                observableList = FXCollections.observableArrayList(response.body());
-                System.out.println(observableList);
+                if (response.isSuccessful()) {
+                    ObservableList<Root> observableList = FXCollections.observableArrayList();
+                    observableList = FXCollections.observableArrayList(response.body());
+                    System.out.println(observableList);
+                } else {
+                    System.out.println(response.code() + " : " + response.message());
+                }
             }
-// 23
+
             @Override
             public void onFailure(Call<Root> call, Throwable throwable) {
                 Platform.runLater(() -> {
